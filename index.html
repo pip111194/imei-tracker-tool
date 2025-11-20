@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMEI Tracker Tool - Track Your Device</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .result-value {
+            color: #333;
+            text-align: right;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #1976d2;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-valid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-invalid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 IMEI Tracker</h1>
+        <p class="subtitle">Track and verify your mobile device IMEI number</p>
+
+        <div class="info-box">
+            <strong>ℹ️ What is IMEI?</strong><br>
+            IMEI (International Mobile Equipment Identity) is a unique 15-digit number that identifies your mobile device.
+        </div>
+
+        <div class="input-group">
+            <label for="imei">Enter IMEI Number (15 digits)</label>
+            <input type="text" id="imei" placeholder="e.g., 123456789012345" maxlength="15">
+        </div>
+
+        <button class="btn" onclick="trackIMEI()">Track IMEI</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #667eea;">Analyzing IMEI...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h3 style="margin-bottom: 20px; color: #667eea;">📊 Device Information</h3>
+            <div class="result-item">
+                <span class="result-label">IMEI Number:</span>
+                <span class="result-value" id="imei-display"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Validation Status:</span>
+                <span class="result-value" id="validation-status"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">TAC (Type Allocation Code):</span>
+                <span class="result-value" id="tac"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Serial Number:</span>
+                <span class="result-value" id="serial"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Check Digit:</span>
+                <span class="result-value" id="check-digit"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Device Type:</span>
+                <span class="result-value" id="device-type"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Manufacturer:</span>
+                <span class="result-value" id="manufacturer"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="tracker.js"></script>
+</body>
+</html>
